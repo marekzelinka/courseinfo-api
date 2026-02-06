@@ -18,8 +18,8 @@ router = APIRouter(prefix="/students", tags=["students"])
 )
 async def create_student(*, student: Student) -> Any:
     db_student = student.model_dump(by_alias=True, exclude={"id"})
-    insert_result = await student_collection.insert_one(db_student)
-    db_student["_id"] = insert_result.inserted_id
+    result = await student_collection.insert_one(db_student)
+    db_student["_id"] = result.inserted_id
     return db_student
 
 
@@ -43,20 +43,11 @@ async def read_student(*, student_id: str) -> Any:
 @router.patch("/{student_id}", response_model=Student, response_model_by_alias=False)
 async def update_student(*, student_id: str, student: UpdateStudent) -> Any:
     student_data = student.model_dump(by_alias=True, exclude_unset=True)
-    if len(student_data):
-        update_result = await student_collection.find_one_and_update(
-            {"_id": ObjectId(student_id)},
-            {"$set": student_data},
-            return_document=ReturnDocument.AFTER,
-        )
-        if not update_result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Student {student_id!r} not found",
-            )
-        return update_result
-    # Update is empty, but we still return the matching docuemnt
-    db_student = await student_collection.find_one({"_id": ObjectId(student_id)})
+    db_student = await student_collection.find_one_and_update(
+        {"_id": ObjectId(student_id)},
+        {"$set": student_data},
+        return_document=ReturnDocument.AFTER,
+    )
     if not db_student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -67,8 +58,8 @@ async def update_student(*, student_id: str, student: UpdateStudent) -> Any:
 
 @router.delete("/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_student(*, student_id: str) -> None:
-    delete_result = await student_collection.delete_one({"_id": ObjectId(student_id)})
-    if not delete_result.deleted_count:
+    result = await student_collection.delete_one({"_id": ObjectId(student_id)})
+    if not result.deleted_count:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Student {student_id!r} not found",
