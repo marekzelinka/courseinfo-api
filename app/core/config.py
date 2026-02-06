@@ -40,4 +40,4 @@ class Settings(BaseSettings):
         return [str(origin).rstrip("/") for origin in self.cors_origins]
 
 
-config = Settings.model_validate({})
+config = Settings()

@@ -10,7 +10,7 @@ app = FastAPI(title="Student Course API")
 # Set all CORS enabled origins
 if config.all_cors_origins:
     app.add_middleware(
-        CORSMiddleware,  # ty:ignore[invalid-argument-type]
+        CORSMiddleware,
         allow_origins=config.all_cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
@@ -19,5 +19,3 @@ if config.all_cors_origins:
 
 
 app.include_router(students.router)
-
-# TODO: handle objectid malformatted error
