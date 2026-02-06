@@ -1,44 +1,23 @@
-from bson import ObjectId
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-
-from app.core.db import PyObjectId
+from beanie import Document
+from pydantic import BaseModel, EmailStr, Field
 
 
-class Student(BaseModel):
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "example": {
-                "name": "Jane Doe",
-                "email": "jdoe@example.com",
-                "course": "Experiments, Science, and Fashion in Nanophotonics",
-                "gpa": 3.0,
-            }
-        },
-    )
-
-    id: PyObjectId | None = Field(default=None, alias="_id")
+class StudentBase(BaseModel):
     name: str
     email: EmailStr
     course: str
     gpa: float = Field(le=4.0)
 
 
-class UpdateStudent(BaseModel):
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        json_encoders={ObjectId: str},
-        json_schema_extra={
-            "example": {
-                "name": "Jane Doe",
-                "email": "jdoe@example.com",
-                "course": "Experiments, Science, and Fashion in Nanophotonics",
-                "gpa": 3.0,
-            }
-        },
-    )
+class Student(Document, StudentBase):
+    pass
 
+
+class StudentCreate(StudentBase):
+    pass
+
+
+class UpdateStudent(BaseModel):
     name: str | None = None
     email: EmailStr | None = None
     course: str | None = None
